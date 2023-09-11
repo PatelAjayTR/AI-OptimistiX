@@ -8,46 +8,58 @@ env.config();
 const app = express();
 const port = 3000;
 
-const supabase = sp.createClient(process.env.SUPABASE_PROJECT_URL, process.env.SUPABASE_SECRET_KEY, {
+const supabase = sp.createClient('https://hzimkjxtouwyfslgkoml.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imh6aW1ranh0b3V3eWZzbGdrb21sIiwicm9sZSI6ImFub24iLCJpYXQiOjE2OTQ0MzU5MzQsImV4cCI6MjAxMDAxMTkzNH0.fhOSQjUtbLMS9c3IfMa76squR5QLukf2PcPIQL_saS4', {
     auth: {
         persistSession: false
     }
 });
 
 const openai = new OpenAI({
-    apiKey: process.env.OPEN_API_KEY // This is also the default, can be omitted
+    apiKey: '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' // This is also the default, can be omitted
   });
 
 //embed the given chunked text using openai embedding api to get vector
-function embedText(inputText) {
+async function embedText(searchText) {
     try {
-        var result = "";
-        return new Promise((resolve) => {
-            openai.embeddings.create({
-                    model: "text-embedding-ada-002",
-                    input: inputText,
-                })
-                .then((res) => {
-                    console. log(res)
-                    result = res.data[0]["embedding"];
-                });
-            setTimeout(() => {
-                resolve(result);
-            }, 2000);
-        })
+        const {OpenAIClient, AzureKeyCredential} = require("@azure/openai");
+
+        const text = 'This is a large text and I am generating embeddings for numerical reference as system doesnt understand string';
+
+        const client = new OpenAIClient("https://eastus-highq-lab-openai.openai.azure.com", new AzureKeyCredential("83cc6862e1c9464dbec0c9a814593780"));
+        return await client.getEmbeddings('text-embedding-ada-002', [text]).then(async (res) => {
+            // console.log(res.data[0].embedding);
+            var embeddedData = res.data[0].embedding;
+            await supabase
+            .from("embedding_content")
+            .insert({
+                content: !searchText ? text : searchText,
+                embedding: res.data[0].embedding,
+            }).then((res) => {
+                console.log(res);
+
+                if(searchText)
+                {
+                    searchVectorInSupabase(embeddedData);
+                }
+            });
+        });        
+    
+       
     } catch (error) {
-        console.error(err);
+        console.error(error);
     }
 }
 
 async function searchVectorInSupabase(embedding) {
     try {
-        const { data: documents } = await supabase.rpc('search_vector', {
+        await supabase.rpc('search_data', {
             query_embedding: embedding,
             match_threshold: 0.78,
             match_count: 5,
-        })
-        console.log(documents);
+        }).then((res) => {
+            console.log(res.data);
+        });
+        // console.log(documents);
     } catch (error) {
         console.error("Error executing search query:", error);
     }
@@ -55,11 +67,11 @@ async function searchVectorInSupabase(embedding) {
 
 function GetInputQueryAndSearchVectorDB() {
     try {
-        var query = "what is stocks";
+        var query = "What is the size of the text and what is the type of embeddings?";
         //Step 1: Embed the user
         embedText(query).then((embedding) => {
             // Step 2: Search vector DB
-            searchVectorInSupabase(embedding);
+            // searchVectorInSupabase(embedding);
         });
     } catch (error) {
         console.error(error);
@@ -68,7 +80,7 @@ function GetInputQueryAndSearchVectorDB() {
 
 async function ReadDocumentContentToSupbaseDBTable() {
     try {
-        fs.readFile("documents/dd.pdf", "utf8", (err, data) => {
+        fs.readFile("documents/abc.text", "utf8", (err, data) => {
             if (err) {
                 console.error(err);
                 return;
@@ -81,15 +93,8 @@ async function ReadDocumentContentToSupbaseDBTable() {
             const chunks = createChunks(concatenatedFileText, chunkSize);
             // Perform embedding on each chunk
             for (const chunk of chunks) {
-                embedText(chunk).then(async (result) => {
-                    //save to supbase postgres database
-                    const { data, error } = await supabase
-                        .from("semantic_vector_search")
-                        .insert({
-                            content: chunk,
-                            embedding: result,
-                        });
-                    setTimeout(() => { }, 500);
+                embedText('').then(async (result) => {
+                 
                 });
             }
         });
