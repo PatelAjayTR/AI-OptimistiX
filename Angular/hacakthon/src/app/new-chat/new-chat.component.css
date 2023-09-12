@@ -1,15 +1,18 @@
+$background: white;
+$primary: #6c46bd;
+
 .container {
  display: flex;
  justify-content: center;
  align-items: center;
- margin-left: auto;
- margin-right: auto;
+ margin-left: 18px;
+ margin-right: 18px;
 }
 
 .caption {
  padding: 30px;
  text-align: center;
- color: #6c46bd;
+ color: $primary;
 }
 
 #thumbnail {
@@ -20,10 +23,10 @@
 }
 
 .card {
- background: white;
+ background: $background;
  height: 60%;
- width: 700px;
- height: 700px;
+ width: 500px;
+ height: 500px;
  display: flex;
  flex-direction: column;
  filter: drop-shadow(0px 0px 5px black);
@@ -47,7 +50,7 @@
    flex-direction: row;
 
    #message-body {
-     background: #6c46bd;
+     background: $primary;
      margin: auto 8px;
      padding: 12px 24px;
      border-radius: 30px;
@@ -62,7 +65,7 @@
      object-fit: cover;
      border-radius: 50%;
      z-index: 99;
-     border: 3px solid white;
+     border: 3px solid $background;
    }
  }
 
@@ -90,7 +93,7 @@
  display: flex;
  flex-direction: row;
  padding: 16px;
- background: #6c46bd;
+ background: $primary;
  border-radius: 6px;
 
  #chat-textarea {
@@ -115,7 +118,7 @@
  box-shadow: 0 0 3px rgba(0, 0, 0, 0.5);
  color: white;
  padding: 10px;
- background: #6c46bd;
+ background: $primary;
  border-radius: 6px;
 }
 
